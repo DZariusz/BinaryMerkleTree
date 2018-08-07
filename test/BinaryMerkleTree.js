@@ -19,9 +19,6 @@ if (typeof web3.eth.getAccountsPromise === "undefined") {
 }
 
 
-const createAddressUtil = require("./utils/createAddress");
-const createAddress = createAddressUtil();
-
 
 
 
@@ -35,6 +32,7 @@ String.prototype.changeHash=function() {
     let replacement = this.charAt(index) === 'a' ? 'b' : 'a';
     return this.substr(0, index) + replacement+ this.substr(index + replacement.length);
 }
+
 
 
 contract('BinaryMerkleTree contract', function(accounts) {
@@ -57,9 +55,12 @@ contract('BinaryMerkleTree contract', function(accounts) {
 
         //generate some random data to test, but remember, thay must be unique!
         let maxI = randomIntIn(2, 30);
+        if (debug) maxI = 28
         for(let i=0; i<maxI; i++) {
             data.push(randomIntIn(i*5, 4)+1);
         }
+
+        //data = [1,2,3]
 
         console.log('RANDOM TESTING DATA:', data.join(', '));
 

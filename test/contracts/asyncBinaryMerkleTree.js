@@ -25,6 +25,13 @@ function Contract() {
     //all tree items
     app.tree = {};
 
+
+
+    app.calculateTreeNodes = (_inputCount) => {
+        let level = Math.ceil(_inputCount / 2);
+        return _inputCount + (level === 1 ? 1 : app.calculateTreeNodes(level))
+    }
+
     /**
      *
      * @param _leafsHashes logs from contract events
@@ -115,7 +122,9 @@ function Contract() {
             assert.strictEqual(results.LogCreateRoot[0].root, await this.getRoot(), "invalid root hash");
 
             chai.assert.exists(results.LogCreateTreeItem, "missing LogCreateTreeItem events");
-            assert.isAbove(results.LogCreateTreeItem.length, 0);
+            let nodesCount = app.calculateTreeNodes(_data.length);
+            assert.strictEqual(results.LogCreateLeaf.length + results.LogCreateTreeItem.length, nodesCount, "invalid number of nodes in tree");
+            debug && console.log('node count:', nodesCount);
 
 
             //lest just check if all hashes are unique
