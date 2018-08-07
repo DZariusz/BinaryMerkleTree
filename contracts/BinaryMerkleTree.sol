@@ -36,6 +36,8 @@ contract BinaryMerkleTree {
 
   event LogCreateRoot(bytes32 root);
 
+  /// @notice events are ususally about state change in contract, this event helped me with debugging process
+  /// it just inform us how many items we have in each level 
   event LogLevelNodes(uint256 count);
 
 
