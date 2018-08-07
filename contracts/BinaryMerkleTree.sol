@@ -17,6 +17,9 @@ contract BinaryMerkleTree {
   }
 
   /// @dev this is our simple Merkle Tree
+  /// @notice looks "small"? well.. it does the job. Merkle tree (as well as any other hash tree) are just items/nodes
+  /// connected from one to another by pointer (sometimes not only one). Solidity has this great feature of mapping data,
+  /// and this is just perfect data type for building any kind of trees or lists structures.
   mapping (bytes32 => TreeItem) public tree;
 
   /// @dev this are our data, in real product we probably keep them eg in IPFS, but just for this example,
@@ -77,7 +80,7 @@ contract BinaryMerkleTree {
 
 
 
-  /// @dev because I use zero when I have odd number of hashes in level, I don't want to use zeros as input data
+  /// @dev because I use zero, when I have odd number of hashes in tree level, I don't want to use zeros as input data
   /// @return true if all our data are ok, throw otherwise
   function validateData(uint[] _data)
   private
