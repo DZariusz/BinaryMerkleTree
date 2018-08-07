@@ -48,7 +48,7 @@ truffle test
 
 Results of tests:
 
-![screenshot](./screen.jpg)
+![screenshot](./screen.png)
 
 
 
