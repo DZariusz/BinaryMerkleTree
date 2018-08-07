@@ -28,7 +28,7 @@ contract BinaryMerkleTree {
   mapping (bytes32 => uint256) public leafs;
 
   /// @dev workaround - more info later
-  bytes32[] tempHashes;
+  //bytes32[] tempHashes;
 
   /// @dev event will be emitted after creation of each leaf
   event LogCreateLeaf(uint256 data, bytes32 dataHash);
@@ -37,6 +37,8 @@ contract BinaryMerkleTree {
   event LogCreateTreeItem(bytes32 hash, bytes32 left, bytes32 right);
 
   event LogCreateRoot(bytes32 root);
+
+  event LogLevelNodes(uint256 count);
 
 
   constructor() public {
@@ -58,7 +60,11 @@ contract BinaryMerkleTree {
     validateData(_data);
 
     // first step - create data hashes
-    createLeafs(_data);
+    bytes32[] memory h;
+    uint256 index;
+    (h, index) = createLeafs(_data);
+
+    emit LogLevelNodes(index);
 
     // for this example purposes I will create a loop here, but this is not good solution for real product
     // unless you are 100% sure that you will never ever - even in 100 years ;-) - have large amount of data
@@ -73,7 +79,10 @@ contract BinaryMerkleTree {
     // now let's generate our tree with easy fast way, just for recruitment demonstration
 
     // keep this loop going until we create every level of the tree
-    while (createTreeLevel(tempHashes) > 0) {}
+    do {
+      (h, index) = createTreeLevel(h, index);
+      emit LogLevelNodes(index);
+    } while (index > 0);
 
     return true;
   }
@@ -95,25 +104,48 @@ contract BinaryMerkleTree {
   }
 
 
+  function div2ceil(uint a)
+  public
+  pure
+  returns (uint ) {
+    return ((a + (a % 2)) / 2);
+  }
+
+  /// I create it to check, if I can save some gass, if I use memory table instead of `leafs` state,
+  /// to check, if all data is unique, but it turns out, it uses more gas.
+  /* function inArray(bytes32[] memory array, bytes32 v)
+  public
+  pure
+  returns (bool yes){
+
+    for (uint i=0; !yes && i < array.length; i++) {
+      if (array[i] == v) yes = true;
+    }
+
+  } // */
+
   /// @dev this function create bottom level or the tree
   /// @param _data array of input data
   function createLeafs(uint256[] _data)
-  internal
-  returns (bool){
+  private
+  returns (bytes32[], uint256){
 
-    require(tempHashes.length == 0, "We need to start with empty array");
+    // here we will save all leafs hashes
+    bytes32[] memory tmp = new bytes32[](_data.length);
+    uint256 index = 0;
 
     // loop for generating hashes for all input data
     for (uint i=0; i < _data.length; i++) {
 
       bytes32 h = keccak256(abi.encodePacked(_data[i]));
 
-      // "push" is not available in bytes32[] memory outside of storage - it's still in experimental stage
-      // so I needed fast workaround for purpose of this example and I just used storage array instead of memory
-      tempHashes.push(h);
-
 
       require(leafs[h] == 0, "This example require unique data");
+      //require(!inArray(tmp, h), "This example require unique data");  // this uses more gas
+
+
+      tmp[index] = h;
+      index++;
 
       // save data to the contract state
       leafs[h] = _data[i];
@@ -124,30 +156,31 @@ contract BinaryMerkleTree {
     }
 
 
-    return true;
+    return (tmp, index);
   }
 
 
   /// @dev this function creates one tree level
   /// @param _childrenHashes Children hashes from previous level or data hashes, if we start building the tree
   /// @return number of created items
-  function createTreeLevel(bytes32[] memory _childrenHashes)
-  internal
-  returns (uint256){
+  function createTreeLevel(bytes32[] memory _childrenHashes, uint256 _childrenCount)
+  private
+  returns (bytes32[], uint256){
 
-    require(_childrenHashes.length > 0, "_childrenHashes.length must be > 0");
+    require(_childrenCount > 0, "_childrenCount must be > 0");
+
+
+    bytes32[] memory tmp = new bytes32[](div2ceil(_childrenCount));
+    uint256 index = 0;
 
     // if we have only one hash, means our tree is ready and this is our root
-    if (_childrenHashes.length == 1) {
+    if (_childrenCount == 1) {
 
       root = _childrenHashes[0];
       emit LogCreateRoot(_childrenHashes[0]);
 
-      return 0;
+      return (tmp, 0);
     }
-
-    //reset temporary variable
-    tempHashes.length = 0;
 
 
     uint256 len = _childrenHashes.length;
@@ -163,11 +196,12 @@ contract BinaryMerkleTree {
 
 
       //save our hash, so we can pass it to the next level
-      tempHashes.push(h);
+      tmp[index] = h;
+      index++;
     }
 
 
-    return tempHashes.length;
+    return (tmp, index);
   }
 
 
