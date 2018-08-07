@@ -20,7 +20,7 @@ Main limitations:
 * You need to provide all the data at once.
 * Merkle tree is created at once in one transaction and can't be changed. 
 * Tests are enough for this presentation, but we can think of much more for live product.
-* Gas optimization was not a primary goal here.  
+
 
 ## About it
 
