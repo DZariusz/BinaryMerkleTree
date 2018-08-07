@@ -27,8 +27,6 @@ contract BinaryMerkleTree {
   /// Since I have them, I will use this to validate uniqueness of the data
   mapping (bytes32 => uint256) public leafs;
 
-  /// @dev workaround - more info later
-  //bytes32[] tempHashes;
 
   /// @dev event will be emitted after creation of each leaf
   event LogCreateLeaf(uint256 data, bytes32 dataHash);
@@ -103,15 +101,15 @@ contract BinaryMerkleTree {
     return true;
   }
 
-
+  /// @dev it does this ceil(a/2)
   function div2ceil(uint a)
   public
   pure
-  returns (uint ) {
+  returns (uint) {
     return ((a + (a % 2)) / 2);
   }
 
-  /// I create it to check, if I can save some gass, if I use memory table instead of `leafs` state,
+  /// I create it to check, if I can save some gas, if I use memory table instead of `leafs` state,
   /// to check, if all data is unique, but it turns out, it uses more gas.
   /* function inArray(bytes32[] memory array, bytes32 v)
   public
@@ -126,6 +124,7 @@ contract BinaryMerkleTree {
 
   /// @dev this function create bottom level or the tree
   /// @param _data array of input data
+  /// @return array of hashes for created tree level and count of that array
   function createLeafs(uint256[] _data)
   private
   returns (bytes32[], uint256){
@@ -162,7 +161,7 @@ contract BinaryMerkleTree {
 
   /// @dev this function creates one tree level
   /// @param _childrenHashes Children hashes from previous level or data hashes, if we start building the tree
-  /// @return number of created items
+  /// @return array of hashes for created tree level and count of that array
   function createTreeLevel(bytes32[] memory _childrenHashes, uint256 _childrenCount)
   private
   returns (bytes32[], uint256){

@@ -6,8 +6,8 @@ It has a lot of limitations but the **mission** here is just to show how to buil
 
 
 I'm aware that internet has a lot of ready to go examples of Merkle Tree implementations and libraries.
-Normally I would use them and include into the code, to speed up development process,    
-but here, I'm not using any external sources, I'm building it from the scratch, just to show, that I can. 
+Normally I would use them and include into the code, to speed up development process.    
+But here, I'm not using any external sources, I'm building it from the scratch, just to show, that I can. 
 
  
 
@@ -28,6 +28,15 @@ Solidity Smart contract can be found here `contracts/BinaryMerkleTree.sol`.
 I put there a lot of comments about a code and possible other solutions. 
  
 Tests are base on random data - each time you run the tests, you are creating new, random merkle tree.
+In general this is the scenario of how the test are done:
+
+1. script generates array or integers as input data for Solidity tree
+1. Solidity contract creates merkle tree, base on input data
+1. we watch for all events contract emits
+1. we build another merkle tree (in javascript) base on emitted events - so we have *exact copy of
+blockchain tree*. I did it so I can test the implementation.
+1. we randomly choose a proof (array of hashes for selected chunk of data) from our tree 
+1. using Solidity, we validate the proof   
 
 
 
