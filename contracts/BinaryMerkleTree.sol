@@ -259,25 +259,19 @@ contract BinaryMerkleTree {
     // we will use it to validate the proof
     if (!item.leaf) return -4;
 
-    int256 error;
 
     // read whole branch up to the root, we start from 1, because leaf is already pulled and validated
-    for (uint256 i = 1; error == 0 && i < len; i++) {
+    for (uint256 i = 1; i < len; i++) {
 
       if (item.leaf != (i==1) || item.parent != _proof[i]) {
         // this conversion would be a risk, but in this example I do not expect that many items
         // also I return int only because I want to use it for debug purposes
-        error = int256(i);
-        break;
+        return int256(i);
       }
 
       // read next item from our tree
       item = tree[item.parent];
     }
-
-    // if validation fails, return
-    if (error != 0) return error;
-
 
     // we can do one last check (just in case) and see if root item do not have parent
     return item.parent == bytes32(0) ? 0 : int256(-5);
