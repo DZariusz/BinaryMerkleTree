@@ -188,6 +188,30 @@ contract('BinaryMerkleTree contract', function(accounts) {
                 await contract.checkProof(path, true);
             });
 
+            it("should NOT be possible to validate data, if we remove any hash from the proof", async function() {
+
+                await contract.createTree(data, {});
+
+                //lets get any random path to proof
+                let randomData = data[ randomIntIn(0, data.length-1) ];
+
+                chai.assert.exists(randomData, "our random data do not exists");
+                let path = contract.getProof(randomData);
+
+                chai.assert.isAbove(path.length, 0, "Path must not be empty");
+
+                debug && console.log('path for: ' + randomData, path);
+
+                //lets randomly change the data
+                let i = randomIntIn(0, path.length-1);
+                let origin = path;
+                path = path.slice(randomIntIn(0, path.length-1), 1);
+
+                assert.notEqual(origin.length, path.length);
+
+                await contract.checkProof(path, true);
+            });
+
 
 
         }); // */
