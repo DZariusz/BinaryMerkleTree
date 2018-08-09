@@ -147,7 +147,7 @@ function Contract () {
     let result = await this.instance.checkProof(_proof)
     debug && console.log('PROOF: ', result.toString(10))
 
-    if (_expectInvalid) { assert.isFalse(result.toString(10) === '0', 'proof should be invalid') } else { assert.isTrue(result.toString(10) === '0', 'proof does not match') }
+    if (_expectInvalid) { assert.notEqual(result.toString(10), '0', 'proof should be invalid') } else { assert.strictEqual(result.toString(10), '0', 'proof does not match') }
   }
 
   // we can also provide non transaction methods, for easy access

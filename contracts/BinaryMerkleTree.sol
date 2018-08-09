@@ -5,15 +5,16 @@ pragma solidity 0.4.24;
 /// @notice recruitment script
 contract BinaryMerkleTree {
 
+  enum NodeTypes { Leaf, Node, Root }
+
   /// @dev this is tree root hash
   bytes32 public root;
 
 
-  /// @dev this is item in our tree, `parent` is pointer to next item, `leaf` is a flag that inform us,
-  /// if this is bottom hash (leaf)
+  /// @dev this is item in our tree, `parent` is pointer to next item, `  nodeType` will tell us what king of node this is
   struct TreeItem {
     bytes32 parent;
-    bool leaf;
+    NodeTypes nodeType;
   }
 
   /// @dev this is our simple Merkle Tree
@@ -152,7 +153,7 @@ contract BinaryMerkleTree {
       leafs[h] = _data[i];
 
       // and create our first tree level
-      tree[h] = TreeItem({parent: bytes32(0), leaf: true});
+      tree[h] = TreeItem({parent: bytes32(0), nodeType: NodeTypes.Leaf});
       emit LogCreateLeaf(_data[i], h);
     }
 
@@ -178,6 +179,7 @@ contract BinaryMerkleTree {
     if (_childrenCount == 1) {
 
       root = _childrenHashes[0];
+      tree[_childrenHashes[0]].  nodeType = NodeTypes.Root;
       emit LogCreateRoot(_childrenHashes[0]);
 
       return (tmp, 0);
@@ -222,11 +224,29 @@ contract BinaryMerkleTree {
     tree[_right].parent = hash;
 
     // save our current hash
-    tree[hash] = TreeItem({parent: bytes32(0), leaf: false});
+    tree[hash] = TreeItem({parent: bytes32(0), nodeType: NodeTypes.Node});
 
     emit LogCreateTreeItem(hash, _left, _right);
 
     return hash;
+  }
+
+  /// @dev checks if type `nt` is correct according to the level.
+  /// @param nt node type
+  /// @param level current level of the node
+  /// @param branchNodesCount - maximum number of levels (count of all nodes in a branch)
+  function validateNodeType(NodeTypes nt, uint level, uint branchNodesCount)
+  private
+  pure
+  returns (bool) {
+    //first level is a leaf
+    if (level == 0 && nt == NodeTypes.Leaf) return true;
+    //last level is a root
+    if (level == branchNodesCount - 1 && nt == NodeTypes.Root) return true;
+    //all other should be nodes
+    if (nt == NodeTypes.Node) return true;
+
+    return false;
   }
 
 
@@ -259,16 +279,21 @@ contract BinaryMerkleTree {
 
     // this validation working on whole branch, and because we have information about the leaf,
     // we will use it to validate the proof
-    if (!item.leaf) return -4;
+    if (item.  nodeType != NodeTypes.Leaf) return -4;
 
 
     // read whole branch up to the root, we start from 1, because leaf is already pulled and validated
     for (uint256 i = 1; i < len; i++) {
 
-      if (item.leaf != (i==1) || item.parent != _proof[i]) {
+      // `i-1` because our item is a previous one
+      if (!validateNodeType(item.nodeType, i-1, len)) {
         // this conversion would be a risk, but in this example I do not expect that many items
         // also I return int only because I want to use it for debug purposes
         return int256(i);
+      }
+
+      if (item.parent != _proof[i]) {
+        return int256(i*1000);
       }
 
       // read next item from our tree
