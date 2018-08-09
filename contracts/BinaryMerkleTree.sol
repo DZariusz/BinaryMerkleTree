@@ -129,7 +129,7 @@ contract BinaryMerkleTree {
   /// @return array of hashes for created tree level and count of that array
   function createLeafs(uint256[] _data)
   private
-  returns (bytes32[], uint256){
+  returns (bytes32[] memory, uint256){
 
     // here we will save all leafs hashes
     bytes32[] memory tmp = new bytes32[](_data.length);
@@ -166,7 +166,7 @@ contract BinaryMerkleTree {
   /// @return array of hashes for created tree level and count of that array
   function createTreeLevel(bytes32[] memory _childrenHashes, uint256 _childrenCount)
   private
-  returns (bytes32[], uint256){
+  returns (bytes32[] memory, uint256){
 
     require(_childrenCount > 0, "_childrenCount must be > 0");
 
